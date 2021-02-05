@@ -284,3 +284,7 @@ $ ./gradlew publishToSonatype closeAndReleaseRepository
 ----
 
 NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeRepository` task and ensure that the `releaseRepository` task depends on it.
+
+== Additional References
+
+* https://github.com/gradle-nexus/publish-plugin
