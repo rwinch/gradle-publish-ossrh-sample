@@ -23,10 +23,14 @@ plugins {
 }
 ----
 
-* We apply the https://docs.gradle.org/current/userguide/java_plugin.html[Java Plugin] to use Gradle's standard Java conventions
-* We apply the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to sign the Maven artifacts
+* We apply the https://docs.gradle.org/current/userguide/java_plugin.html[Java Plugin] to use Gradle's standard Java conventions.
+This is applied to every project that is deployed.
+* We apply the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to sign the Maven artifacts.
+This is applied to every project that is deployed.
 * We apply the https://github.com/Codearte/gradle-nexus-staging-plugin[nexus-staging] plugin that creates tasks to create, close, and promote staged repositories in OSSRH.
+This plugin is only applied on the root project.
 * We apply the https://github.com/marcphilipp/nexus-publish-plugin[nexus-publish] plugin so that the OSSRH staging repository is explicitly created before publishing to Nexus which improves the reliability of publishing.
+This is applied to every project that is deployed.
 
 === Configure group
 
@@ -42,6 +46,7 @@ group = "io.rwinch.sample"
 
 Here we configure the https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:publications[Gradle Publications] (i.e. what will be published to the repository).
 In our example, we configure a publication named `maven` that contains all of the `java` compoonents.
+This is applied to every project that is deployed.
 
 .build.gradle
 [source,groovy]
@@ -58,6 +63,7 @@ publishing {
 === OSSRH Requirements
 
 Next we must ensure that all of the OSSRH https://central.sonatype.org/pages/requirements.html[requirements] are met.
+This is applied to every project that is deployed.
 
 The following code generates the https://central.sonatype.org/pages/requirements.html#supply-javadoc-and-sources[required Javadoc and Sources] using Gradle's https://docs.gradle.org/current/userguide/java_plugin.html#sec:java-extension[Java extension].
 
@@ -135,6 +141,7 @@ project.plugins.withType(MavenPublishPlugin).all {
 === Configure Nexus Staging Plugin
 
 We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+This is only configured on the root project.
 
 .build.gradle
 [source,groovy]
@@ -153,6 +160,7 @@ nexusStaging {
 === Configure Nexus Publishing Plugin
 
 We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+This is applied to every project that is deployed.
 
 .build.gradle
 [source,groovy]
@@ -176,6 +184,7 @@ nexusPublishing {
 
 Finally, we set up a https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories[repository] on our local file system in the build directory, so that we can easily test publishing independant of OSSRH.
 This is not required, but it makes troubleshooting easier.
+This is applied to every project that is deployed.
 
 .build.gradle
 [source,groovy]
