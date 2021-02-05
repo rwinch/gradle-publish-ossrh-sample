@@ -1,0 +1,286 @@
+:toc2:
+:sectanchors:
+
+This project demonstrates how to https://docs.gradle.org/current/userguide/publishing_maven.html[publish] a https://docs.gradle.org/current/userguide/userguide.html[Gradle] project to https://central.sonatype.org/pages/ossrh-guide.html[OSSRH].
+Refer to link:blob/master/build.gradle[build.gradle] for a complete working sample.
+
+== build.gradle
+
+The following steps discuss how to configure the `build.gradle` for deploying to OSSRH.
+
+=== Apply Plugins
+
+The first step is to apply the necessary plugins:
+
+.build.gradle
+[source,groovy]
+----
+plugins {
+	id "java"
+	id "signing"
+	id "io.codearte.nexus-staging" version "0.22.0"
+	id "de.marcphilipp.nexus-publish" version "0.4.0"
+}
+----
+
+* We apply the https://docs.gradle.org/current/userguide/java_plugin.html[Java Plugin] to use Gradle's standard Java conventions
+* We apply the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to sign the Maven artifacts
+* We apply the https://github.com/Codearte/gradle-nexus-staging-plugin[nexus-staging] plugin that creates tasks to create, close, and promote staged repositories in OSSRH.
+* We apply the https://github.com/marcphilipp/nexus-publish-plugin[nexus-publish] plugin so that the OSSRH staging repository is explicitly created before publishing to Nexus which improves the reliability of publishing.
+
+=== Configure group
+
+We configure the `group` so it can be used to default the group in the pom:
+
+.build.gradle
+[source,groovy]
+----
+group = "io.rwinch.sample"
+----
+
+=== Configure Gradle Publications
+
+Here we configure the https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:publications[Gradle Publications] (i.e. what will be published to the repository).
+In our example, we configure a publication named `maven` that contains all of the `java` compoonents.
+
+.build.gradle
+[source,groovy]
+----
+publishing {
+	publications {
+		maven(MavenPublication) {
+			from(components.java)
+		}
+	}
+}
+----
+
+=== OSSRH Requirements
+
+Next we must ensure that all of the OSSRH https://central.sonatype.org/pages/requirements.html[requirements] are met.
+
+The following code generates the https://central.sonatype.org/pages/requirements.html#supply-javadoc-and-sources[required Javadoc and Sources] using Gradle's https://docs.gradle.org/current/userguide/java_plugin.html#sec:java-extension[Java extension].
+
+.build.gradle
+[source,groovy]
+----
+java {
+	withJavadocJar()
+	withSourcesJar()
+}
+----
+
+The following code configures the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to generate the https://central.sonatype.org/pages/requirements.html#sign-files-with-gpgpgp[required signatures] if the https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties[Gradle property] `signingKey` or `signing.keyId` is found.
+
+.build.gradle
+[source,groovy]
+----
+def hasSigningKey = project.hasProperty("signing.keyId") || project.findProperty("signingKey")
+if(hasSigningKey) {
+	sign(project)
+}
+void sign(Project project) {
+	project.signing {
+		required { project.gradle.taskGraph.hasTask("required") }
+		def signingKeyId = project.findProperty("signingKeyId")
+		def signingKey = project.findProperty("signingKey")
+		def signingPassword = project.findProperty("signingPassword")
+		if (signingKeyId) {
+			useInMemoryPgpKeys(signingKeyId, signingKey, signingPassword)
+		} else if (signingKey) {
+			useInMemoryPgpKeys(signingKey, signingPassword)
+		}
+		sign publishing.publications.maven
+	}
+}
+
+----
+
+Next we need to ensure that https://docs.gradle.org/current/userguide/maven_plugin.html#sec:maven_pom_generation[Gradle is configured to customize the pom] in order to ensure the https://central.sonatype.org/pages/requirements.html#sufficient-metadata[required metadata] is present in the Maven pom.
+The `groupId`, `artifactId`, and `vession` of the pom are https://docs.gradle.org/current/userguide/publishing_maven.html#sec:identity_values_in_the_generated_pom[defaulted by the `maven-publish` plugin].
+
+.build.gradle
+[source,groovy]
+----
+project.plugins.withType(MavenPublishPlugin).all {
+	PublishingExtension publishing = project.extensions.getByType(PublishingExtension)
+	publishing.publications.withType(MavenPublication).all { mavenPublication ->
+		mavenPublication.pom {
+			name = "${project.group}:${project.name}"
+			description = name
+			url = "https://github.com/rwinch/gradle-publish-ossrh-sample"
+			licenses {
+				license {
+					name = "The Apache License, Version 2.0"
+					url = "https://www.apache.org/licenses/LICENSE-2.0"
+				}
+			}
+			developers {
+				developer {
+					id = "rwinch"
+					name = "Rob Winch"
+					email = "rwinch@noreply.github.com"
+				}
+			}
+			scm {
+				connection = "scm:git:https://github.com/rwinch/gradle-publish-ossrh-sample"
+				developerConnection = "scm:git:ssh://github.com/rwinch/gradle-publish-ossrh-sample.git"
+				url = "https://github.com/rwinch/gradle-publish-ossrh-sample"
+			}
+		}
+	}
+}
+----
+
+=== Configure Nexus Staging Plugin
+
+We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+
+.build.gradle
+[source,groovy]
+----
+nexusStaging {
+	if (project.hasProperty("sonatypeUsername")) {
+		username = project.sonatypeUsername
+	}
+	if (project.hasProperty("sonatypePassword")) {
+		password = project.sonatypePassword
+	}
+	repositoryDescription = "Release ${project.group} ${project.version}"
+}
+----
+
+=== Configure Nexus Publishing Plugin
+
+We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+
+.build.gradle
+[source,groovy]
+----
+nexusPublishing {
+    repositories {
+        sonatype {
+            if (project.hasProperty("sonatypeUsername")) {
+                username = project.sonatypeUsername
+            }
+            if (project.hasProperty("sonatypePassword")) {
+                password = project.sonatypePassword
+            }
+        }
+    }
+}
+----
+
+
+=== Publishing Local
+
+Finally, we set up a https://docs.gradle.org/current/userguide/publishing_maven.html#publishing_maven:repositories[repository] on our local file system in the build directory, so that we can easily test publishing independant of OSSRH.
+This is not required, but it makes troubleshooting easier.
+
+.build.gradle
+[source,groovy]
+-----
+publishing {
+	repositories {
+		maven {
+			name = "local"
+			// change URLs to point to your repos, e.g. http://my.org/repo
+			def releasesRepoUrl = "$buildDir/repos/releases"
+			def snapshotsRepoUrl = "$buildDir/repos/snapshots"
+			url = version.endsWith("SNAPSHOT") ? snapshotsRepoUrl : releasesRepoUrl
+		}
+	}
+}
+-----
+
+== Gradle Tasks
+
+The configuration we use requires the following Gradle Properties to be set:
+
+* `signingKey` the pgp used to sign the artifacts.
+This project has a `test-private.pgp` key in it that you can use to try things out.
+Do not use it for your own artifacts because anyone could use it to impersonate you.
+* `signingPassword` the password for the `signingKey`.
+The password for `test-private.pgp` is `password`.
+Again, do not use this for real deployments.
+* `sonatypeUsername` the username from sonatype used to publish artifacts. This is the token username, not the one used for logging into the UI.
+* `sonatypePassword1 the password from sonatype used to publish artifacts. This is the token password, not the one used for logging into the UI.
+
+The following will provide all the Gradle Properties necessary for the commands below using environment variables.
+
+[source,java]
+----
+export ORG_GRADLE_PROJECT_signingKey=`cat test-private.pgp`
+export ORG_GRADLE_PROJECT_signingPassword=password
+export ORG_GRADLE_PROJECT_sonatypeUsername=<replace-with-your-token-username>
+export ORG_GRADLE_PROJECT_sonatypePassword=<replace-with-your-token-password>
+----
+
+When you first set up the code or need to troubleshoot signing process, you can run the `signMavenPublication` task.
+
+----
+$ ./gradlew signMavenPublication
+$ tree build/libs
+build/libs
+├── publish-ossrh-sample-1.0.0.jar
+├── publish-ossrh-sample-1.0.0.jar.asc
+├── publish-ossrh-sample-1.0.0-javadoc.jar
+├── publish-ossrh-sample-1.0.0-javadoc.jar.asc
+├── publish-ossrh-sample-1.0.0-sources.jar
+└── publish-ossrh-sample-1.0.0-sources.jar.asc
+----
+
+You can also test what is going to be published using the <<Publishing Local,local publication>> to publish to a directory on your local machine.
+You will notice, if we have defined the signing properties, that all of our artifacts (jars, javadoc, pom, etc) are also signed.
+
+----
+$ ./gradlew publishMavenPublicationToLocalRepository
+$ tree build/repos/releases/   
+build/repos/releases/
+└── io
+    └── rwinch
+        └── sample
+            └── publish-ossrh-sample
+                ├── 1.0.0
+                │    ├── publish-ossrh-sample-1.0.0.jar
+                │    ├── publish-ossrh-sample-1.0.0.jar.asc
+                │    ├── publish-ossrh-sample-1.0.0.jar.asc.md5
+                │    ├── publish-ossrh-sample-1.0.0.jar.asc.sha1
+                │    ├── publish-ossrh-sample-1.0.0.jar.asc.sha256
+                │    ├── publish-ossrh-sample-1.0.0.jar.asc.sha512
+                │    ├── publish-ossrh-sample-1.0.0.jar.md5
+                │    ├── publish-ossrh-sample-1.0.0.jar.sha1
+                │    ├── publish-ossrh-sample-1.0.0.jar.sha256
+                │    ├── publish-ossrh-sample-1.0.0.jar.sha512
+                │    ├── publish-ossrh-sample-1.0.0-javadoc.jar
+                │    ├── publish-ossrh-sample-1.0.0-javadoc.jar.asc
+...
+----
+
+If you publish to OSSRH it will automatically create a staging repository if the version looks like a release:
+
+----
+$ ./gradlew publishToSonatype
+----
+
+Now visit https://oss.sonatype.org/#stagingRepositories and you can view the staged repository using the Sonatype username and password (the UI one not the token).
+
+https://github.com/Codearte/gradle-nexus-staging-plugin#1-why-do-i-get-wrong-number-of-received-repositories-in-state-open-expected-1-received-2[If there is only a single repository], you can close the repository using:
+
+----
+$ ./gradlew closeRepository
+----
+
+Since we are using the https://github.com/marcphilipp/nexus-publish-plugin[nexus-publish] plugin we can combine the two command for more reliability as it tracks the repository id that was created to select the correct repository to close:
+
+----
+$ ./gradlew publishToSonatype closeRepository
+----
+
+If you want to release the staged repository as well, then you can perform:
+
+----
+$ ./gradlew publishToSonatype closeAndReleaseRepository
+----
+
+NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeRepository` task and ensure that the `releaseRepository` task depends on it.
