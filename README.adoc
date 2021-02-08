@@ -166,16 +166,16 @@ This is applied to every project that is deployed.
 [source,groovy]
 ----
 nexusPublishing {
-    repositories {
-        sonatype {
-            if (project.hasProperty("sonatypeUsername")) {
-                username = project.sonatypeUsername
-            }
-            if (project.hasProperty("sonatypePassword")) {
-                password = project.sonatypePassword
-            }
-        }
-    }
+	repositories {
+		sonatype {
+			if (project.hasProperty("sonatypeUsername")) {
+				username = project.sonatypeUsername
+			}
+			if (project.hasProperty("sonatypePassword")) {
+				password = project.sonatypePassword
+			}
+		}
+	}
 }
 ----
 
