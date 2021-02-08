@@ -213,7 +213,7 @@ Do not use it for your own artifacts because anyone could use it to impersonate 
 The password for `test-private.pgp` is `password`.
 Again, do not use this for real deployments.
 * `sonatypeUsername` the username from sonatype used to publish artifacts. This is the token username, not the one used for logging into the UI.
-* `sonatypePassword1 the password from sonatype used to publish artifacts. This is the token password, not the one used for logging into the UI.
+* `sonatypePassword` the password from sonatype used to publish artifacts. This is the token password, not the one used for logging into the UI.
 
 The following will provide all the Gradle Properties necessary for the commands below using environment variables.
 
