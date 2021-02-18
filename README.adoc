@@ -18,8 +18,8 @@ The first step is to apply the necessary plugins:
 plugins {
 	id "java"
 	id "signing"
-	id "io.codearte.nexus-staging" version "0.22.0"
-	id "de.marcphilipp.nexus-publish" version "0.4.0"
+	id "maven-publish"
+	id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
 }
 ----
 
@@ -27,10 +27,10 @@ plugins {
 This is applied to every project that is deployed.
 * We apply the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to sign the Maven artifacts.
 This is applied to every project that is deployed.
-* We apply the https://github.com/Codearte/gradle-nexus-staging-plugin[nexus-staging] plugin that creates tasks to create, close, and promote staged repositories in OSSRH.
-This plugin is only applied on the root project.
-* We apply the https://github.com/marcphilipp/nexus-publish-plugin[nexus-publish] plugin so that the OSSRH staging repository is explicitly created before publishing to Nexus which improves the reliability of publishing.
+* We apply the https://docs.gradle.org/current/userguide/publishing_maven.html[maven-publish] adds the ability to publish our artifacts.
 This is applied to every project that is deployed.
+* We apply the https://github.com/gradle-nexus/publish-plugin[io.github.gradle-nexus.publish-plugin] to manage the staging repository in OSSRH.
+This is applied only to the root project.
 
 === Configure group
 
@@ -268,26 +268,18 @@ $ ./gradlew publishToSonatype
 
 Now visit https://oss.sonatype.org/#stagingRepositories and you can view the staged repository using the Sonatype username and password (the UI one not the token).
 
-https://github.com/Codearte/gradle-nexus-staging-plugin#1-why-do-i-get-wrong-number-of-received-repositories-in-state-open-expected-1-received-2[If there is only a single repository], you can close the repository using:
+
+We can publish and close the repository all at once:
 
 ----
-$ ./gradlew closeRepository
-----
-
-Since we are using the https://github.com/marcphilipp/nexus-publish-plugin[nexus-publish] plugin we can combine the two command for more reliability as it tracks the repository id that was created to select the correct repository to close:
-
-----
-$ ./gradlew publishToSonatype closeRepository
+$ ./gradlew publishToSonatype closeSonatypeStagingRepository
 ----
 
 If you want to release the staged repository as well, then you can perform:
 
 ----
-$ ./gradlew publishToSonatype closeAndReleaseRepository
+$ ./gradlew publishToSonatype closeSonatypeStagingRepository
 ----
 
-NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeRepository` task and ensure that the `releaseRepository` task depends on it.
+NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeRepository` task and ensure that the `releaseSonatypeStagingRepository` task depends on it.
 
-== Additional References
-
-* https://github.com/gradle-nexus/publish-plugin

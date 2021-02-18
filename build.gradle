@@ -5,8 +5,8 @@
 plugins {
 	id "java"
 	id "signing"
-	id "de.marcphilipp.nexus-publish" version "0.4.0"
-	id "io.codearte.nexus-staging" version "0.22.0"
+	id "maven-publish"
+	id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
 }
 
 group = "io.github.rwinch"
@@ -85,12 +85,6 @@ project.plugins.withType(MavenPublishPlugin).all {
 			}
 		}
 	}
-}
-
-nexusStaging {
-	username = project.findProperty("sonatypeUsername")
-	password = project.findProperty("sonatypePassword")
-	repositoryDescription = "Release ${project.group} ${project.version}"
 }
 
 nexusPublishing {
