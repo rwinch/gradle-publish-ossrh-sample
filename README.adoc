@@ -155,7 +155,8 @@ nexusStaging {
 
 === Configure Nexus Publishing Plugin
 
-We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+We configure the Nexus Publishing Plugin.
+The default is to use the credentials from the Nexus Staging plugin.
 This is applied to every project that is deployed.
 
 .build.gradle
@@ -163,8 +164,7 @@ This is applied to every project that is deployed.
 ----
 nexusPublishing {
 	repositories {
-		sonatype {
-		}
+		sonatype()
 	}
 	// these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
 	// If you get the error "java.net.SocketTimeoutException: timeout", these lines will help.
