@@ -88,25 +88,14 @@ project.plugins.withType(MavenPublishPlugin).all {
 }
 
 nexusStaging {
-	if (project.hasProperty("sonatypeUsername")) {
-		username = project.sonatypeUsername
-	}
-	if (project.hasProperty("sonatypePassword")) {
-		password = project.sonatypePassword
-	}
+	username = project.findProperty("sonatypeUsername")
+	password = project.findProperty("sonatypePassword")
 	repositoryDescription = "Release ${project.group} ${project.version}"
 }
 
 nexusPublishing {
 	repositories {
-		sonatype {
-			if (project.hasProperty("sonatypeUsername")) {
-				username = project.sonatypeUsername
-			}
-			if (project.hasProperty("sonatypePassword")) {
-				password = project.sonatypePassword
-			}
-		}
+		sonatype()
 	}
 
 	// these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
