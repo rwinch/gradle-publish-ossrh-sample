@@ -281,5 +281,5 @@ If you want to release the staged repository as well, then you can perform:
 $ ./gradlew publishToSonatype closeAndReleaseSonatypeStagingRepository
 ----
 
-NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeRepository` task and ensure that the `releaseSonatypeStagingRepository` task depends on it.
+NOTE: If you want to perform some additional checks before you release the repository, you can create a task that `mustRunAfter` the `closeSonatypeStagingRepository` task and ensure that the `releaseSonatypeStagingRepository` task depends on it.
 
