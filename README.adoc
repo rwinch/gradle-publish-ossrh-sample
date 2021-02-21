@@ -138,33 +138,19 @@ project.plugins.withType(MavenPublishPlugin).all {
 }
 ----
 
-=== Configure Nexus Staging Plugin
+=== Configure Gradle Nexus Publishing Plugin
 
-We configure the Nexus Staging Plugin to use the username from the Gradle property `sonatypeUsername` and password from the Gradle property `sonatypePassword`.
+We configure the Gradle Nexus Publishing Plugin.
+By default it uses credentials configured as the project properties `sonatypeUsername` and `sonatypePassword`.
 This is only configured on the root project.
-
-.build.gradle
-[source,groovy]
-----
-nexusStaging {
-	username = project.findProperty("sonatypeUsername")
-	password = project.findProperty("sonatypePassword")
-	repositoryDescription = "Release ${project.group} ${project.version}"
-}
-----
-
-=== Configure Nexus Publishing Plugin
-
-We configure the Nexus Publishing Plugin.
-The default is to use the credentials from the Nexus Staging plugin.
-This is applied to every project that is deployed.
 
 .build.gradle
 [source,groovy]
 ----
 nexusPublishing {
 	repositories {
-		sonatype()
+		sonatype()    //sonatypeUsername and sonatypePassword properties are used automatically
+		
 	}
 	// these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
 	// If you get the error "java.net.SocketTimeoutException: timeout", these lines will help.
