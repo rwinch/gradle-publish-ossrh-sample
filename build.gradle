@@ -37,7 +37,7 @@ java {
 // ./gradlew signMavenPublication
 //
 // NOTE: If you are using the legacy publishing you need to sign using the info at https://docs.gradle.org/current/userguide/signing_plugin.html#sec:signing_pom_files
-def hasSigningKey = project.hasProperty("signing.keyId") || project.findProperty("signingKey")
+def hasSigningKey = project.hasProperty("signingKeyId") || project.hasProperty("signingKey")
 if(hasSigningKey) {
 	sign(project)
 }
