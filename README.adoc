@@ -76,12 +76,12 @@ java {
 }
 ----
 
-The following code configures the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to generate the https://central.sonatype.org/pages/requirements.html#sign-files-with-gpgpgp[required signatures] if the https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties[Gradle property] `signingKey` or `signing.keyId` is found.
+The following code configures the https://docs.gradle.org/current/userguide/signing_plugin.html[Signing Plugin] to generate the https://central.sonatype.org/pages/requirements.html#sign-files-with-gpgpgp[required signatures] if the https://docs.gradle.org/current/userguide/build_environment.html#sec:project_properties[Gradle property] `signingKey` or `signingKeyId` is found.
 
 .build.gradle
 [source,groovy]
 ----
-def hasSigningKey = project.hasProperty("signing.keyId") || project.findProperty("signingKey")
+def hasSigningKey = project.hasProperty("signingKeyId") || project.hasProperty("signingKey")
 if(hasSigningKey) {
 	sign(project)
 }
