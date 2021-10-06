@@ -153,7 +153,7 @@ nexusPublishing {
 	repositories {
 		sonatype()    //sonatypeUsername and sonatypePassword properties are used automatically
 
-		// OR, if you registered with Sonatype after 25 February 2021
+		// OR, if you registered with Sonatype after 24 February 2021
 		// sonatype {
 		//	    nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
 		//	    snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
