@@ -144,13 +144,20 @@ We configure the Gradle Nexus Publishing Plugin.
 By default it uses credentials configured as the project properties `sonatypeUsername` and `sonatypePassword`.
 This is only configured on the root project.
 
+If you registered with Sonatype after 24 February 2021 to publish to Maven Central, then you must set your `nexusUrl` and `snapshotRepositoryUrl` manually. See https://central.sonatype.org/news/20210223_new-users-on-s01/ for more information.
+
 .build.gradle
 [source,groovy]
 ----
 nexusPublishing {
 	repositories {
 		sonatype()    //sonatypeUsername and sonatypePassword properties are used automatically
-		
+
+		// OR, if you registered with Sonatype after 24 February 2021
+		// sonatype {
+		//	    nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+		//	    snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+		// }
 	}
 	// these are not strictly required. The default timeouts are set to 1 minute. But Sonatype can be really slow.
 	// If you get the error "java.net.SocketTimeoutException: timeout", these lines will help.
