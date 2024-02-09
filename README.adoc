@@ -2,7 +2,7 @@
 :sectanchors:
 
 This project demonstrates how to https://docs.gradle.org/current/userguide/publishing_maven.html[publish] a https://docs.gradle.org/current/userguide/userguide.html[Gradle] project to https://central.sonatype.org/pages/ossrh-guide.html[OSSRH].
-Refer to link:blob/master/build.gradle[build.gradle] for a complete working sample.
+Refer to link:build.gradle[build.gradle] for a complete working sample.
 
 == build.gradle
 
